@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<!-- Mera Order — link खो जाए या expire हो जाए तो Order ID + email से नया download link -->
+<html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mera Order — Anjaan Musafir Books</title><meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Hind:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>.f label{display:block;margin-top:12px;font-size:.9rem;color:var(--mute)}.f input{width:100%;padding:12px;border:1px solid #cfc7b3;border-radius:10px;font:inherit}#out{margin-top:1.2rem}</style></head>
+<body data-page="info">
+<header><div class="wrap bar"><a class="logo" href="index.html">ANJAAN MUSAFIR BOOKS</a>
+<button id="menu" aria-expanded="false" aria-controls="nav">Menu</button>
+<nav id="nav"><a href="index.html">Home</a><a href="index.html#books">Books</a><a href="index.html#about">About</a><a href="index.html#vision">Our Vision</a><a href="index.html#contact">Contact</a></nav></div></header>
+<main>
+<section class="phead"><div class="wrap narrow"><p class="crumb"><a href="index.html">Home</a> / Mera Order</p><h1>Mera Order</h1>
+<p class="upd">Download link खो गया या expire हो गया? Order ID और email डालिए, नया link मिल जाएगा।</p><div class="trail"></div></div></section>
+<article class="wrap narrow doc"><div class="f">
+  <label for="oid">Order ID</label><input id="oid" autocomplete="off">
+  <label for="em">भुगतान वाला Email</label><input id="em" type="email" autocomplete="email">
+  <button class="btn primary" id="go" style="margin-top:16px">Download link पाएँ</button>
+  <div id="out" role="status"></div></div></article>
+</main><footer id="foot"></footer>
+<script src="books.js"></script><script src="app.js"></script> <!-- मेन्यू और footer के लिए -->
+<script>
+// Worker का पता (अपना workers.dev link)
+var API="https://anjaan-musafir-delivery.officialsuperswagg.workers.dev";
+document.getElementById("go").addEventListener("click",async function(){
+  var out=document.getElementById("out"),b=this; out.textContent="जाँच रहे हैं…"; b.disabled=true;
+  try{
+    var r=await fetch(API+"/api/my-order",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({order_id:document.getElementById("oid").value,email:document.getElementById("em").value})});
+    var d=await r.json();
+    if(r.ok&&d.download_url){ out.innerHTML='<div class="sum"><b>आपकी eBook तैयार है ✅</b><br><a class="btn primary" style="margin-top:10px" href="'+d.download_url+'">Download eBook</a></div>'; }
+    else{ out.textContent=d.error||"कुछ गड़बड़ हुई, फिर कोशिश करें।"; }
+  }catch(e){ out.textContent="नेटवर्क में दिक्कत है, थोड़ी देर बाद कोशिश करें।"; }
+  b.disabled=false;
+});
+</script></body></html>

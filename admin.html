@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<!-- admin.html — सिर्फ़ मालिक के लिए। कीमत, offer और coupon यहीं से बदलें।
+     Password Cloudflare के ADMIN_KEY secret में रखा जाता है (यहाँ कहीं लिखा नहीं है)। -->
+<html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Admin</title>
+<style>
+body{margin:0;font:16px/1.5 system-ui,sans-serif;background:#f6f1e6;color:#101a26;padding:14px;max-width:760px;margin-inline:auto}
+h1,h2{font-family:Georgia,serif;margin:.4em 0}.card{background:#fff;border:1px solid #e3dccb;border-radius:12px;padding:14px;margin:12px 0}
+label{display:block;font-size:.85rem;color:#566170;margin-top:8px}input,select{width:100%;padding:10px;border:1px solid #cfc7b3;border-radius:8px;font:inherit}
+button{background:#c9a45c;border:0;border-radius:999px;padding:10px 18px;font:600 1rem system-ui;margin-top:12px;cursor:pointer}button.red{background:#c0392b;color:#fff}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}small{color:#566170}#msg{position:sticky;top:0;background:#101a26;color:#fff;padding:8px 12px;border-radius:8px;display:none}
+</style></head><body>
+<h1>Admin Panel</h1><div id="msg"></div>
+
+<!-- 1) लॉगिन: password सिर्फ़ इस tab की memory (sessionStorage) में रहता है -->
+<div class="card" id="login"><label>Password</label><input id="pw" type="password" autocomplete="current-password">
+<button onclick="login()">खोलें</button></div>
+
+<div id="app" style="display:none">
+  <h2>किताबें और Offer</h2><div id="books"></div>
+  <h2>Coupon बनाएँ</h2>
+  <div class="card">
+    <div class="row"><div><label>Code (जैसे MUSAFIR20)</label><input id="c_code"></div>
+    <div><label>प्रकार</label><select id="c_type"><option value="PERCENT">% प्रतिशत</option><option value="FLAT">₹ सीधे रुपये</option></select></div></div>
+    <div class="row"><div><label>कितना (20 = 20% या ₹20)</label><input id="c_val" type="number"></div>
+    <div><label>कम से कम कीमत ₹ (खाली = कोई शर्त नहीं)</label><input id="c_min" type="number"></div></div>
+    <label>किन किताबों पर चलेगा</label><div id="c_books"></div>
+    <div class="row"><div><label>कितनी बार (खाली = अनगिनत)</label><input id="c_max" type="number"></div>
+    <div><label>कब तक (खाली = बंद करने तक)</label><input id="c_end" type="datetime-local"></div></div>
+    <button onclick="saveCoupon()">Coupon सेव करें</button>
+  </div>
+  <h2>चालू Coupons</h2><div id="coupons"></div>
+</div>
+
+<script>
+// Worker का पता — अपना workers.dev link यहाँ रखें
+var API = "https://anjaan-musafir-delivery.officialsuperswagg.workers.dev";
+var KEY = sessionStorage.getItem("ak") || "", DATA = null;
+var $ = function (i) { return document.getElementById(i); };
+function esc(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function msg(t){var m=$("msg");m.textContent=t;m.style.display="block";setTimeout(function(){m.style.display="none"},3500)}
+
+// सर्वर से बात: हर बार password header में जाता है
+async function call(path, body){
+  var r = await fetch(API+path,{method:body?"POST":"GET",headers:{"Content-Type":"application/json","x-admin-key":KEY},body:body?JSON.stringify(body):undefined});
+  var d = await r.json(); if(!r.ok) throw new Error(d.error||"Error"); return d;
+}
+async function login(){ KEY=$("pw").value; try{ await load(); sessionStorage.setItem("ak",KEY); }catch(e){ msg(e.message); } }
+// तारीख़: browser का local समय → UTC (सही समय के लिए)
+function toIso(v){ return v ? new Date(v).toISOString() : ""; }
+function toLocal(iso){ if(!iso) return ""; var d=new Date(iso); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,16); }
+
+async function load(){
+  DATA = await call("/api/admin/data");
+  $("login").style.display="none"; $("app").style.display="block";
+  // हर किताब का card: सामान्य कीमत + offer
+  $("books").innerHTML = DATA.products.map(function(p){
+    var o = DATA.offers.find(function(x){return x.product_id===p.product_id})||{};
+    return '<div class="card"><b>'+esc(p.name)+'</b> <small>('+esc(p.product_id)+')</small>'
+    +'<div class="row"><div><label>सामान्य कीमत ₹</label><input id="pr_'+p.product_id+'" type="number" value="'+p.price+'"></div>'
+    +'<div><button onclick="savePrice(\''+p.product_id+'\')">कीमत सेव</button></div></div>'
+    +'<hr><small>Offer (बिना coupon, साइट पर सीधा दिखेगा)</small>'
+    +'<div class="row"><div><label>Offer कीमत ₹</label><input id="os_'+p.product_id+'" type="number" value="'+(o.sale_price==null?"":o.sale_price)+'"></div>'
+    +'<div><label>कटी हुई पुरानी कीमत ₹</label><input id="om_'+p.product_id+'" type="number" value="'+(o.mrp==null?"":o.mrp)+'"></div></div>'
+    +'<label>Offer का नाम (बैज)</label><input id="ol_'+p.product_id+'" value="'+esc(o.label||"")+'">'
+    +'<div class="row"><div><label>शुरू</label><input id="osd_'+p.product_id+'" type="datetime-local" value="'+toLocal(o.starts_at)+'"></div>'
+    +'<div><label>ख़त्म</label><input id="oed_'+p.product_id+'" type="datetime-local" value="'+toLocal(o.ends_at)+'"></div></div>'
+    +'<label><input id="oa_'+p.product_id+'" type="checkbox" style="width:auto" '+(o.active?"checked":"")+'> Offer चालू</label>'
+    +'<button onclick="saveOffer(\''+p.product_id+'\')">Offer सेव</button></div>';
+  }).join("");
+  // coupon के लिए किताबों के checkbox
+  $("c_books").innerHTML = '<label><input type="checkbox" id="cb_all" style="width:auto" checked> सभी किताबें</label>'
+   + DATA.products.map(function(p){return '<label><input type="checkbox" class="cb" value="'+p.product_id+'" style="width:auto"> '+esc(p.name)+'</label>'}).join("");
+  // चालू coupons की सूची
+  $("coupons").innerHTML = DATA.coupons.length ? DATA.coupons.map(function(c){
+    return '<div class="card"><b>'+esc(c.code)+'</b> — '+(c.discount_type==="PERCENT"?c.discount_value+"%":"₹"+c.discount_value)
+    +'<br><small>किताबें: '+esc(c.product_ids)+' · उपयोग: '+c.used_count+(c.max_uses!=null?"/"+c.max_uses:"")
+    +(c.expires_at?" · तक: "+new Date(c.expires_at).toLocaleString():"")+(c.active?"":" · बंद")+'</small><br>'
+    +'<button class="red" onclick="delCoupon(\''+esc(c.code)+'\')">हटाएँ</button></div>';
+  }).join("") : "<small>अभी कोई coupon नहीं।</small>";
+}
+async function run(fn,ok){ try{ await fn(); msg(ok); await load(); }catch(e){ msg(e.message); } }
+function savePrice(id){ run(function(){return call("/api/admin/price",{product_id:id,price:$("pr_"+id).value})},"कीमत सेव हुई ✅"); }
+function saveOffer(id){ run(function(){return call("/api/admin/offer",{product_id:id,sale_price:$("os_"+id).value,mrp:$("om_"+id).value,
+  label:$("ol_"+id).value,starts_at:toIso($("osd_"+id).value),ends_at:toIso($("oed_"+id).value),active:$("oa_"+id).checked})},"Offer सेव हुआ ✅"); }
+function saveCoupon(){
+  var ids = $("cb_all").checked ? "*" : Array.prototype.map.call(document.querySelectorAll(".cb:checked"),function(x){return x.value}).join(",");
+  if(!ids) return msg("कोई किताब चुनें");
+  run(function(){return call("/api/admin/coupon",{code:$("c_code").value,discount_type:$("c_type").value,discount_value:$("c_val").value,
+    min_amount:$("c_min").value,max_uses:$("c_max").value,product_ids:ids,expires_at:toIso($("c_end").value),active:true})},"Coupon सेव हुआ ✅"); }
+function delCoupon(code){ if(confirm(code+" हटाएँ?")) run(function(){return call("/api/admin/coupon-delete",{code:code})},"हट गया"); }
+if(KEY){ load().catch(function(){ sessionStorage.removeItem("ak"); }); }
+</script></body></html>
