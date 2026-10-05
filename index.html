@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<!-- होम पेज: ऊपर hero, फिर खास किताब, फिर सभी किताबें, फिर About/Vision/Contact -->
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anjaan Musafir Books — Hindi eBooks</title>
+<meta name="description" content="Anjaan Musafir Books की Hindi eBooks: Overthinking, आदतें, AI और करियर, Personal Growth। आसान भाषा, काम की बातें।">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Hind:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="home"> <!-- data-page="home" से app.js जानता है कि यह होम पेज है -->
+<a class="skip" href="#books">मुख्य भाग पर जाएँ</a>
+<header><div class="wrap bar">
+  <a class="logo" href="index.html">ANJAAN MUSAFIR BOOKS</a>
+  <button id="menu" aria-expanded="false" aria-controls="nav">Menu</button>
+  <nav id="nav" aria-label="Main"><a href="index.html">Home</a><a href="#books">Books</a><a href="#about">About</a><a href="#vision">Our Vision</a><a href="#contact">Contact</a></nav>
+</div></header>
+<main>
+  <section class="hero"><div class="wrap center">
+    <p class="eyebrow">Hindi eBooks</p>
+    <h1>हर सफ़र बाहर जाने का नहीं होता।</h1>
+    <p class="lead">कुछ सफ़र खुद को समझने के होते हैं।</p>
+    <div class="actions" style="justify-content:center"><a class="btn primary" href="#books">किताबें देखें</a></div>
+    <div id="herocovers"></div> <!-- app.js यहाँ 4 कवर भरता है -->
+  </div></section>
+  <section id="featured"></section> <!-- app.js यहाँ खास किताब भरता है -->
+  <section id="books" class="wrap sec"><h2>Our Books</h2><p class="sub">सोच, आदतें, करियर और आगे बढ़ने की किताबें।</p>
+    <div id="grid" class="grid"></div> <!-- app.js यहाँ सारी किताबें भरता है (books.js से) -->
+  </section>
+  <section id="about" class="wrap sec narrow"><h2>About</h2><p>Anjaan Musafir Books सरल हिंदी में सोच, आदतों और आत्म-विकास की eBooks बनाता है — ताकि हर इंसान आसानी से अपने लक्ष्य की ओर बढ़ सके।</p></section>
+  <section id="vision" class="wrap sec narrow"><h2>Our Vision</h2><p>हर पाठक तक ऐसी किताबें पहुँचाना जो सस्ती हों, समझने में आसान हों और असल ज़िंदगी में काम आएँ।</p></section>
+  <section id="contact" class="wrap sec narrow"><h2>Contact</h2><div id="contactlinks"></div><p><a href="contact.html">Contact पेज खोलें →</a></p></section>
+</main>
+<footer id="foot"></footer> <!-- footer app.js भरता है -->
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script> <!-- Cashfree का पेमेंट SDK -->
+<script src="books.js"></script> <!-- पहले किताबों का डेटा -->
+<script src="app.js"></script>   <!-- फिर वह कोड जो डेटा से पेज बनाता है -->
+</body>
+</html>
