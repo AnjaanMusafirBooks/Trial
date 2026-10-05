@@ -45,7 +45,6 @@
   ========================= */
 
   function badge(b) {
-    // admin में offer का नाम भरा हो तो वही बैज दिखे
     var L = D1_PRODUCTS[b.id] && D1_PRODUCTS[b.id].label;
     if (L) return '<span class="badge">' + esc(L) + "</span>";
 
@@ -67,8 +66,6 @@
   var D1_PRODUCTS = {};
 
   async function loadD1Products() {
-    // एक ही call में सारी किताबों की कीमत + offer आती है
-    // Worker और D1 पर कम बोझ
     if (typeof BOOKS === "undefined") {
       console.error("BOOKS data not found.");
       return;
@@ -76,7 +73,6 @@
 
     try {
       var response = await fetch(WORKER_URL + "/api/catalog");
-
       if (!response.ok) return;
 
       var data = await response.json();
@@ -84,13 +80,9 @@
 
       BOOKS.forEach(function (b) {
         var d = all[PRODUCT_IDS[b.id]];
-
-        if (d && d.price != null) {
-          D1_PRODUCTS[b.id] = d;
-        }
+        if (d && d.price != null) D1_PRODUCTS[b.id] = d;
       });
     } catch (err) {
-      // नेटवर्क में दिक्कत हो तो books.js वाली कीमत ही दिखेगी
       console.warn("catalog load failed", err);
     }
   }
@@ -107,14 +99,9 @@
   }
 
   function currentMrp(b) {
-    // offer में MRP भरी हो तो वही, वरना books.js वाली
-    if (
-      D1_PRODUCTS[b.id] &&
-      D1_PRODUCTS[b.id].mrp != null
-    ) {
+    if (D1_PRODUCTS[b.id] && D1_PRODUCTS[b.id].mrp != null) {
       return Number(D1_PRODUCTS[b.id].mrp);
     }
-
     return Number(b.mrp || 0);
   }
 
@@ -286,7 +273,6 @@
         "</div>" +
 
         "</div>";
-
     } else if (fs) {
       fs.hidden = true;
     }
@@ -775,15 +761,19 @@
       if (email === null)
         return;
 
+      /*
+        Mobile Optional:
+        खाली छोड़ने पर भी आगे बढ़ेगा।
+      */
       var phone =
         prompt(
-          "अपना 10-digit Mobile Number लिखें:"
+          "Mobile Number (Optional) — चाहें तो खाली छोड़ें:"
         );
 
       if (phone === null)
-        return;
+        phone = "";
 
-      // Coupon code (खाली छोड़ सकते हैं) — असली छूट server जाँचकर लगाता है
+      // Coupon code optional
       var coupon = prompt(
         "Coupon code (अगर है तो लिखें, नहीं तो खाली छोड़ें):"
       );
@@ -795,6 +785,7 @@
 
       name = name.trim();
       email = email.trim();
+
       phone =
         phone.replace(
           /\D/g,
@@ -818,13 +809,18 @@
         return;
       }
 
+      /*
+        Mobile दिया गया है तो valid होना चाहिए।
+        खाली है तो कोई error नहीं।
+      */
       if (
+        phone &&
         !/^[6-9]\d{9}$/.test(
           phone
         )
       ) {
         alert(
-          "कृपया सही 10-digit Indian Mobile Number डालें।"
+          "अगर Mobile Number देना है तो सही 10-digit Indian Mobile Number डालें।"
         );
         return;
       }
@@ -870,7 +866,6 @@
 
           console.error(data);
 
-          // coupon गलत/ख़त्म हो तो वही कारण दिखाओ
           alert(
             data && data.coupon_error
               ? data.coupon_error
@@ -1013,8 +1008,9 @@
 
           "<p>आपकी eBook तैयार है।</p>" +
 
-          // Order ID दिखाओ — बाद में "Mera Order" पेज पर काम आएगा
-          "<p>Order ID: <b>" + esc(data.order_id) + "</b><br><small>इसे संभालकर रखें।</small></p>" +
+          "<p>Order ID: <b>" +
+          esc(data.order_id) +
+          "</b><br><small>इसे संभालकर रखें।</small></p>" +
 
           '<a href="' +
           data.download_url +
@@ -1073,42 +1069,16 @@
 
     chrome();
 
+    /*
+      पहले website render होगी।
+      उसके बाद D1 से latest price/offer आएगा।
+      इससे D1/API slow होने पर books गायब नहीं होंगी।
+    */
+
     var pg =
       document.body.dataset.page;
 
-    /*
-      IMPORTANT:
-      BOOKS data is the primary source for rendering the website.
-      D1 is only an enhancement layer for latest price/offer data.
-
-      Therefore we render first and load D1 afterwards.
-      If /api/catalog is slow, unavailable, or temporarily fails,
-      the books must still remain visible.
-    */
     if (pg === "home") {
       home();
 
-    } else if (pg === "book") {
-      book();
-    }
-
-    /*
-      D1 is optional for the initial page render.
-      Once its data arrives, refresh the page so the latest
-      price/MRP/offer information is reflected.
-    */
-    await loadD1Products();
-
-    if (pg === "home") {
-      home();
-
-    } else if (pg === "book") {
-      book();
-    }
-
-    checkPaymentReturn();
-  }
-
-  start();
-
-})();
+  
