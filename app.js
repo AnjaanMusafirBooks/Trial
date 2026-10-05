@@ -1074,4 +1074,41 @@
     chrome();
 
     var pg =
-      document.bod
+      document.body.dataset.page;
+
+    /*
+      IMPORTANT:
+      BOOKS data is the primary source for rendering the website.
+      D1 is only an enhancement layer for latest price/offer data.
+
+      Therefore we render first and load D1 afterwards.
+      If /api/catalog is slow, unavailable, or temporarily fails,
+      the books must still remain visible.
+    */
+    if (pg === "home") {
+      home();
+
+    } else if (pg === "book") {
+      book();
+    }
+
+    /*
+      D1 is optional for the initial page render.
+      Once its data arrives, refresh the page so the latest
+      price/MRP/offer information is reflected.
+    */
+    await loadD1Products();
+
+    if (pg === "home") {
+      home();
+
+    } else if (pg === "book") {
+      book();
+    }
+
+    checkPaymentReturn();
+  }
+
+  start();
+
+})();
