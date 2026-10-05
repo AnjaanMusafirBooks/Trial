@@ -1,7 +1,6 @@
 /* ===== Anjaan Musafir Books — premium style.css =====
    रंग-थीम: गहरा नीला (navy) + सुनहरा (gold) + हल्का ivory */
 
-/* 1) रंग और फ़ॉन्ट */
 :root{
   --navy:#0b1426;
   --navy2:#14213d;
@@ -93,7 +92,8 @@ p{
   z-index:50
 }
 
-/* 3) Header और Menu */
+/* 3) HEADER */
+
 header{
   position:sticky;
   top:0;
@@ -150,6 +150,7 @@ header{
 }
 
 @media(min-width:760px){
+
   #menu{
     display:none
   }
@@ -174,7 +175,8 @@ header{
   }
 }
 
-/* 4) Buttons */
+/* 4) BUTTONS */
+
 .btn{
   display:inline-block;
   border:1px solid var(--gold);
@@ -185,15 +187,28 @@ header{
   padding:.8rem 1.5rem;
   border-radius:999px;
   cursor:pointer;
-  transition:.2s
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease,
+    background .2s ease,
+    border-color .2s ease
 }
 
 .btn:hover{
   background:#c9a45c22
 }
 
+.btn:active{
+  transform:translateY(1px)
+}
+
 .btn.primary{
-  background:linear-gradient(135deg,#e0c27f,var(--gold));
+  background:
+    linear-gradient(
+      135deg,
+      #e0c27f,
+      var(--gold)
+    );
   color:var(--navy);
   border:0;
   box-shadow:0 6px 18px #c9a45c55
@@ -216,13 +231,15 @@ header{
   margin-top:1rem
 }
 
-/* 5) Hero */
+/* 5) HERO */
+
 .hero{
-  background:radial-gradient(
-    1200px 500px at 70% -10%,
-    #1d3260,
-    var(--navy)
-  );
+  background:
+    radial-gradient(
+      1200px 500px at 70% -10%,
+      #1d3260,
+      var(--navy)
+    );
   color:#d9d6cc;
   padding:clamp(3rem,9vw,6rem) 0
 }
@@ -259,14 +276,20 @@ header{
   max-width:150px;
   border-radius:4px 8px 8px 4px;
   box-shadow:0 18px 30px #0008;
-  transform:rotate(-3deg)
+  transform:rotate(-3deg);
+  transition:
+    transform .28s ease,
+    box-shadow .28s ease
 }
 
 #herocovers img:nth-child(even){
-  transform:translateY(14px) rotate(3deg)
+  transform:
+    translateY(14px)
+    rotate(3deg)
 }
 
-/* 6) Books Grid */
+/* 6) BOOK GRID */
+
 .sub{
   color:var(--mute)
 }
@@ -284,12 +307,14 @@ header{
 }
 
 @media(min-width:620px){
+
   .grid{
     grid-template-columns:1fr 1fr
   }
 }
 
 @media(min-width:960px){
+
   .grid{
     grid-template-columns:repeat(3,1fr)
   }
@@ -302,18 +327,29 @@ header{
   border-radius:16px;
   padding:1.2rem;
   box-shadow:0 8px 24px #0b142614;
-  transition:.25s
+  transition:
+    transform .22s ease,
+    box-shadow .22s ease,
+    border-color .22s ease
 }
 
 .card:hover{
   transform:translateY(-5px);
-  box-shadow:0 16px 34px #0b142624
+  box-shadow:0 16px 34px #0b142624;
+  border-color:#c9a45ca6
 }
 
 .card img{
   border-radius:6px 10px 10px 6px;
   margin-bottom:1rem;
-  box-shadow:0 10px 22px #0b142640
+  box-shadow:0 10px 22px #0b142640;
+  transition:
+    transform .28s ease,
+    box-shadow .28s ease
+}
+
+.card:hover img{
+  transform:translateY(-2px)
 }
 
 .card h3{
@@ -332,7 +368,8 @@ header{
   border-radius:999px
 }
 
-/* 7) Price */
+/* 7) PRICE */
+
 .price{
   display:flex;
   align-items:baseline;
@@ -352,7 +389,8 @@ header{
 .price .off{
   color:#1d7a4b;
   font-weight:600;
-  font-size:.9rem
+  font-size:.9rem;
+  letter-spacing:.02em
 }
 
 .price.big .now{
@@ -366,7 +404,8 @@ header{
   font-size:.85rem
 }
 
-/* 8) Featured */
+/* 8) FEATURED */
+
 #featured{
   background:var(--navy);
   color:#d9d6cc;
@@ -389,6 +428,7 @@ header{
 }
 
 @media(min-width:760px){
+
   .feat{
     grid-template-columns:.8fr 1.2fr
   }
@@ -398,16 +438,21 @@ header{
   max-width:300px;
   margin:auto;
   border-radius:6px 12px 12px 6px;
-  box-shadow:-18px 24px 46px #000a
+  box-shadow:-18px 24px 46px #000a;
+  transition:
+    transform .28s ease,
+    box-shadow .28s ease
 }
 
-/* 9) Book Detail */
+/* 9) BOOK DETAIL */
+
 .bhero{
-  background:radial-gradient(
-    900px 400px at 20% -10%,
-    #1d3260,
-    var(--navy)
-  );
+  background:
+    radial-gradient(
+      900px 400px at 20% -10%,
+      #1d3260,
+      var(--navy)
+    );
   color:#d9d6cc;
   padding:clamp(2.4rem,7vw,4.5rem) 0
 }
@@ -431,6 +476,7 @@ header{
 }
 
 @media(min-width:760px){
+
   .bgrid{
     grid-template-columns:.7fr 1.3fr
   }
@@ -440,7 +486,10 @@ header{
   max-width:280px;
   margin:auto;
   border-radius:6px 12px 12px 6px;
-  box-shadow:-16px 22px 44px #000a
+  box-shadow:-16px 22px 44px #000a;
+  transition:
+    transform .28s ease,
+    box-shadow .28s ease
 }
 
 .sec ul{
@@ -481,10 +530,11 @@ header{
 .pv{
   display:grid;
   gap:1rem;
-  grid-template-columns:repeat(
-    auto-fit,
-    minmax(220px,1fr)
-  )
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(220px,1fr)
+    )
 }
 
 .pv img{
@@ -509,7 +559,8 @@ dd{
   margin:0
 }
 
-/* 10) Sticky Buy */
+/* 10) STICKY / FINAL */
+
 .sticky{
   position:fixed;
   left:0;
@@ -518,9 +569,12 @@ dd{
   z-index:25;
   background:#fffffff2;
   border-top:1px solid var(--line);
-  padding:.7rem 1rem calc(
-    .7rem + env(safe-area-inset-bottom,0)
-  );
+  padding:
+    .7rem 1rem
+    calc(
+      .7rem +
+      env(safe-area-inset-bottom,0)
+    );
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -538,7 +592,8 @@ dd{
   color:var(--ivory)
 }
 
-/* 11) Footer */
+/* 11) FOOTER */
+
 footer{
   background:#070d1a;
   color:#b9b8b3;
@@ -552,6 +607,7 @@ footer{
 }
 
 @media(min-width:760px){
+
   .fgrid{
     grid-template-columns:1.2fr 1fr 1fr
   }
@@ -578,13 +634,15 @@ footer a:hover{
   margin-top:1.5rem
 }
 
-/* 12) Other Pages */
+/* 12) OTHER PAGES */
+
 .phead{
-  background:radial-gradient(
-    900px 360px at 20% -20%,
-    #1d3260,
-    var(--navy)
-  );
+  background:
+    radial-gradient(
+      900px 360px at 20% -20%,
+      #1d3260,
+      var(--navy)
+    );
   color:#d9d6cc;
   padding:clamp(2.2rem,6vw,3.6rem) 0
 }
@@ -689,6 +747,7 @@ footer a:hover{
 }
 
 @media(min-width:640px){
+
   .cgrid{
     grid-template-columns:1fr 1fr
   }
@@ -721,238 +780,305 @@ summary{
 
 /* =========================================================
    13) PREMIUM CHECKOUT MODAL
-   app.js के checkoutModal() के साथ सीधे match
-   ========================================================= */
+========================================================= */
+
+body.checkout-open{
+  overflow:hidden
+}
 
 .checkout-modal{
   position:fixed;
   inset:0;
-  z-index:10000;
+  z-index:1000;
   display:flex;
   align-items:center;
   justify-content:center;
   padding:1rem;
-  overflow-y:auto;
+  visibility:hidden;
+  opacity:0;
+  pointer-events:none;
+  transition:
+    opacity .22s ease,
+    visibility .22s ease
+}
+
+.checkout-modal.open{
+  visibility:visible;
+  opacity:1;
+  pointer-events:auto
 }
 
 .checkout-backdrop{
   position:absolute;
   inset:0;
-  background:rgba(7,13,26,.78);
-  backdrop-filter:blur(8px);
+  background:rgba(4,9,20,.72);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px)
 }
 
 .checkout-dialog{
   position:relative;
-  z-index:2;
-  width:min(520px,100%);
-  max-height:calc(100vh - 2rem);
-  overflow-y:auto;
-  background:var(--ivory);
+  z-index:1;
+  width:min(560px,100%);
+  max-height:92vh;
+  overflow:auto;
+  background:
+    linear-gradient(
+      180deg,
+      #fffdf8,
+      #f6f1e6
+    );
   color:var(--ink);
-  border:1px solid var(--gold);
-  border-radius:20px;
-  padding:1.5rem;
-  box-shadow:0 24px 70px #000b;
-  animation:checkoutIn .2s ease-out;
+  border:1px solid rgba(201,164,92,.38);
+  border-radius:22px;
+  box-shadow:
+    0 30px 90px rgba(0,0,0,.38),
+    0 8px 30px rgba(11,20,38,.22);
+  transform:
+    translateY(18px)
+    scale(.985);
+  transition:
+    transform .24s ease
 }
 
-@keyframes checkoutIn{
-  from{
-    opacity:0;
-    transform:translateY(12px) scale(.98)
-  }
-
-  to{
-    opacity:1;
-    transform:translateY(0) scale(1)
-  }
-}
-
-.checkout-close{
-  position:absolute;
-  top:.8rem;
-  right:.8rem;
-  width:38px;
-  height:38px;
-  border:1px solid var(--line);
-  border-radius:50%;
-  background:#fff;
-  color:var(--navy);
-  font-size:1.5rem;
-  line-height:1;
-  cursor:pointer;
-}
-
-.checkout-close:hover{
-  background:var(--navy);
-  color:var(--gold);
-  border-color:var(--navy);
+.checkout-modal.open
+.checkout-dialog{
+  transform:
+    translateY(0)
+    scale(1)
 }
 
 .checkout-head{
-  padding-right:2.5rem;
-  margin-bottom:1.2rem
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:1rem;
+  padding:1.35rem 1.35rem 1rem;
+  background:
+    linear-gradient(
+      135deg,
+      var(--navy),
+      var(--navy2)
+    );
+  border-radius:21px 21px 0 0
 }
 
 .checkout-head h2{
-  margin-bottom:.35rem
+  color:var(--ivory);
+  font-size:clamp(1.35rem,4vw,1.75rem);
+  margin:0
 }
 
-.checkout-head p{
-  color:var(--mute);
-  font-size:.94rem
+.checkout-kicker{
+  color:var(--gold);
+  font-size:.72rem;
+  letter-spacing:.18em;
+  font-weight:700;
+  margin:0 0 .25rem
+}
+
+.checkout-close{
+  width:38px;
+  height:38px;
+  border:1px solid #ffffff38;
+  border-radius:50%;
+  background:#ffffff12;
+  color:var(--ivory);
+  font-size:1.65rem;
+  line-height:1;
+  cursor:pointer;
+  transition:.2s ease
+}
+
+.checkout-close:hover{
+  background:#c9a45c2e;
+  border-color:var(--gold);
+  transform:rotate(4deg)
 }
 
 .checkout-book{
   display:flex;
   align-items:center;
   gap:1rem;
-  background:#fff;
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:.8rem;
-  margin-bottom:1.2rem
+  padding:1.15rem 1.35rem
 }
 
-.checkout-book img{
-  width:64px;
-  height:88px;
+.checkout-cover{
+  width:76px;
+  height:108px;
   object-fit:cover;
-  border-radius:5px 8px 8px 5px;
-  box-shadow:0 5px 14px #0b142633;
-  flex:none
+  flex:0 0 auto;
+  border-radius:5px 10px 10px 5px;
+  box-shadow:0 12px 25px #0b142638
 }
 
-.checkout-book strong{
-  display:block;
+.checkout-book-info{
+  min-width:0
+}
+
+.checkout-title{
   color:var(--navy);
-  font-family:var(--serif);
-  font-size:1.05rem;
-  line-height:1.4
+  font-size:1.18rem;
+  margin:0 0 .35rem;
+  overflow-wrap:anywhere
 }
 
-.checkout-price{
-  display:flex;
-  align-items:baseline;
-  gap:.55rem;
-  flex-wrap:wrap;
-  margin-top:.25rem
+.checkout-price .price{
+  gap:.5rem
 }
 
-.checkout-price span{
-  color:var(--navy);
-  font:600 1.35rem var(--serif)
+.checkout-price .price .now{
+  font-size:1.55rem
 }
 
-.checkout-price s{
-  color:#8a8f98;
-  font-size:.9rem
-}
-
-.checkout-price small{
-  color:#1d7a4b;
-  font-weight:700;
+.checkout-price .price .off{
   font-size:.78rem
+}
+
+.checkout-secure{
+  color:var(--mute);
+  font-size:.78rem;
+  margin:.3rem 0 0
+}
+
+.checkout-divider{
+  height:1px;
+  background:var(--line);
+  margin:0 1.35rem
 }
 
 .checkout-form{
   display:grid;
-  gap:.9rem
+  gap:.9rem;
+  padding:1.2rem 1.35rem 1.35rem
 }
 
-.checkout-form label{
-  display:block;
+.checkout-field{
+  display:grid;
+  gap:.35rem
+}
+
+.checkout-field>span{
   color:var(--navy);
-  font-weight:600;
-  font-size:.92rem
+  font-size:.9rem;
+  font-weight:600
 }
 
-.checkout-form label > span{
+.checkout-field em{
   color:var(--mute);
-  font-weight:400;
-  font-size:.82rem
+  font-style:normal;
+  font-weight:400
 }
 
-.checkout-form input{
+.checkout-field input{
   width:100%;
-  margin-top:.35rem;
-  border:1px solid #cfc7b6;
+  min-height:47px;
+  padding:.72rem .85rem;
+  border:1px solid #d6cfbf;
   border-radius:10px;
   background:#fff;
   color:var(--ink);
-  padding:.8rem .9rem;
-  font:400 1rem var(--sans);
+  font:inherit;
   outline:none;
-  transition:.2s
+  transition:
+    border-color .18s ease,
+    box-shadow .18s ease,
+    background .18s ease
 }
 
-.checkout-form input:focus{
+.checkout-field input::placeholder{
+  color:#9298a0
+}
+
+.checkout-field input:focus{
   border-color:var(--gold);
-  box-shadow:0 0 0 3px #c9a45c25
+  box-shadow:
+    0 0 0 3px #c9a45c29;
+  background:#fffefa
 }
 
-.input-skip{
-  display:flex;
-  align-items:stretch;
-  gap:.45rem
-}
-
-.input-skip input{
-  flex:1;
-  min-width:0
-}
-
-.field-skip{
-  align-self:stretch;
-  margin-top:.35rem;
-  border:1px solid var(--line);
-  border-radius:10px;
-  background:#fff;
+.checkout-field small{
   color:var(--mute);
-  padding:0 .8rem;
-  font:600 .85rem var(--sans);
-  cursor:pointer
+  font-size:.75rem;
+  line-height:1.45
 }
 
-.field-skip:hover{
-  border-color:var(--gold);
-  color:var(--navy)
+.checkout-error{
+  border:1px solid #d9a2a2;
+  background:#fff3f3;
+  color:#8a2727;
+  border-radius:10px;
+  padding:.7rem .85rem;
+  font-size:.86rem;
+  line-height:1.45
+}
+
+.checkout-error[hidden]{
+  display:none
 }
 
 .checkout-safe{
-  color:var(--mute);
-  font-size:.82rem;
-  margin:.1rem 0
+  display:flex;
+  align-items:center;
+  gap:.6rem;
+  border:1px solid #ded7c8;
+  border-radius:10px;
+  padding:.7rem .8rem;
+  background:#ffffff9e;
+  color:#58616b;
+  font-size:.78rem;
+  line-height:1.4
+}
+
+.checkout-safe-icon{
+  display:grid;
+  place-items:center;
+  width:23px;
+  height:23px;
+  flex:0 0 auto;
+  border-radius:50%;
+  background:var(--gold);
+  color:var(--navy);
+  font-weight:800
+}
+
+.checkout-actions{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:.7rem;
+  margin-top:.15rem
+}
+
+.checkout-pay,
+.checkout-cancel{
+  min-height:48px
 }
 
 .checkout-pay{
-  width:100%;
-  min-height:50px;
-  font-size:1rem
+  width:100%
+}
+
+.checkout-pay:disabled{
+  opacity:.7;
+  cursor:wait;
+  transform:none!important
 }
 
 .checkout-cancel{
-  border:0;
-  background:none;
-  color:var(--mute);
-  font:600 .9rem var(--sans);
-  cursor:pointer;
-  padding:.35rem
+  border-color:#cfc8ba;
+  color:var(--navy);
+  background:#fff
 }
 
 .checkout-cancel:hover{
-  color:var(--navy);
-  text-decoration:underline
+  background:#eee8dc
 }
 
-/* Checkout open होने पर background scroll न हो */
-body.checkout-open{
-  overflow:hidden
-}
+/* =========================================================
+   14) RESPONSIVE CHECKOUT
+========================================================= */
 
-/* Mobile checkout */
-@media(max-width:520px){
+@media(max-width:759px){
 
   .checkout-modal{
     align-items:flex-end;
@@ -961,36 +1087,59 @@ body.checkout-open{
 
   .checkout-dialog{
     width:100%;
-    max-height:calc(100vh - 1rem);
-    border-radius:18px;
-    padding:1.2rem;
+    max-height:94vh;
+    border-radius:20px
   }
 
-  .checkout-head h2{
-    font-size:1.45rem
+  .checkout-head{
+    border-radius:19px 19px 0 0
   }
 
-  .checkout-book img{
-    width:56px;
-    height:78px
+  .checkout-book{
+    padding:.95rem 1rem
   }
 
-  .checkout-form input{
-    padding:.75rem .8rem
+  .checkout-form{
+    padding:1rem
   }
 
-  .checkout-pay{
-    min-height:52px
+  .checkout-divider{
+    margin:0 1rem
+  }
+
+  .checkout-cover{
+    width:64px;
+    height:92px
+  }
+
+  .checkout-actions{
+    grid-template-columns:1fr
+  }
+
+  .checkout-cancel{
+    order:2
   }
 }
 
-/* Reduced motion */
+/* =========================================================
+   15) ACCESSIBILITY / REDUCED MOTION
+========================================================= */
+
 @media(prefers-reduced-motion:reduce){
 
   *{
     transition:none!important;
-    animation:none!important;
     scroll-behavior:auto!important
   }
 
+  .checkout-modal,
+  .checkout-dialog,
+  .checkout-close,
+  .card,
+  .btn,
+  .card img,
+  .bgrid>img,
+  .feat-img img{
+    transition:none!important
+  }
    }
