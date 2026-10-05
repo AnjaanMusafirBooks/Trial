@@ -67,7 +67,7 @@
   var D1_PRODUCTS = {};
 
   async function loadD1Products() {
-    // एक ही call में सारी किताबों की कीमत + offer आती है
+    // एक ही call में सारी किताबों की कीमत + offer आती है (Worker और D1 पर कम बोझ)
     if (typeof BOOKS === "undefined") {
       console.error("BOOKS data not found.");
       return;
@@ -102,11 +102,10 @@
   }
 
   function currentMrp(b) {
-    // offer में MRP भरी हो तो वही, वरना books.js वाली
+    // offer में MRP (कटी हुई कीमत) भरी हो तो वही, वरना books.js वाली
     if (D1_PRODUCTS[b.id] && D1_PRODUCTS[b.id].mrp != null) {
       return Number(D1_PRODUCTS[b.id].mrp);
     }
-
     return Number(b.mrp || 0);
   }
 
@@ -720,172 +719,211 @@
   }
 
   /* =========================
-     PREMIUM CASHFREE BUY
+     CASHFREE BUY
   ========================= */
 
-  function checkoutModal(b, btn, backendProductId) {
-    var old = document.getElementById("checkout-modal");
-    if (old) old.remove();
+  document.addEventListener(
+    "click",
+    async function (e) {
 
-    var now = currentPrice(b);
-    var mrp = currentMrp(b);
-    var off = mrp && mrp > now
-      ? Math.round((1 - now / mrp) * 100)
-      : 0;
+      var btn =
+        e.target.closest(
+          ".buy-btn"
+        );
 
-    var modal = document.createElement("div");
-    modal.id = "checkout-modal";
-    modal.className = "checkout-modal";
+      if (!btn) return;
 
-    modal.innerHTML =
-      '<div class="checkout-backdrop" data-close-checkout></div>' +
-      '<div class="checkout-dialog" role="dialog" aria-modal="true" aria-labelledby="checkout-title">' +
-        '<button class="checkout-close" type="button" aria-label="Close" data-close-checkout>×</button>' +
-        '<div class="checkout-head">' +
-          '<p class="eyebrow">SECURE CHECKOUT</p>' +
-          '<h2 id="checkout-title">अपनी किताब की शुरुआत करें</h2>' +
-          '<p>कुछ छोटी जानकारी भरें और सुरक्षित payment पर आगे बढ़ें।</p>' +
-        '</div>' +
-        '<div class="checkout-book">' +
-          '<img src="' + esc(b.cover) + '" alt="' + esc(b.title) + ' — eBook cover">' +
-          '<div>' +
-            '<strong>' + esc(b.title) + '</strong>' +
-            '<div class="checkout-price">' +
-              '<span>₹' + now + '</span>' +
-              (mrp && mrp > now ? '<s>₹' + mrp + '</s>' : '') +
-              (off ? '<small>' + off + '% OFF</small>' : '') +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-        '<form class="checkout-form" id="checkout-form" novalidate>' +
-          '<label>नाम<input id="checkout-name" type="text" maxlength="100" autocomplete="name" placeholder="अपना नाम" required></label>' +
-          '<label>Email<input id="checkout-email" type="email" maxlength="160" autocomplete="email" placeholder="you@example.com" required></label>' +
-          '<label>Mobile<input id="checkout-phone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="10-digit mobile" required></label>' +
-          '<label>Coupon <span>(Optional)</span><input id="checkout-coupon" type="text" maxlength="50" autocomplete="off" placeholder="Coupon code (अगर है)"></label>' +
-          '<p class="checkout-safe">🔒 Secure payment · Digital PDF · No account required</p>' +
-          '<button class="btn primary checkout-pay" id="checkout-pay" type="submit">Payment पर जाएँ — ₹' + now + '</button>' +
-          '<button class="checkout-cancel" type="button" data-close-checkout>वापस जाएँ</button>' +
-        '</form>' +
-      '</div>';
+      var productId =
+        btn.getAttribute(
+          "data-product-id"
+        );
 
-    document.body.appendChild(modal);
-    document.body.classList.add("checkout-open");
+      var backendProductId =
+        PRODUCT_IDS[
+          productId
+        ];
 
-    var close = function () {
-      document.body.classList.remove("checkout-open");
-      modal.remove();
-      if (btn) btn.disabled = false;
-    };
+      if (!backendProductId) {
+        alert(
+          "Book not found."
+        );
+        return;
+      }
 
-    modal.querySelectorAll("[data-close-checkout]").forEach(function (el) {
-      el.addEventListener("click", close);
-    });
+      var name =
+        prompt(
+          "अपना नाम लिखें:"
+        );
 
-    modal.querySelector("#checkout-form").addEventListener("submit", async function (e) {
-      e.preventDefault();
+      if (name === null)
+        return;
 
-      var pay = modal.querySelector("#checkout-pay");
-      var name = modal.querySelector("#checkout-name").value.trim();
-      var email = modal.querySelector("#checkout-email").value.trim();
-      var phone = modal.querySelector("#checkout-phone").value.replace(/\D/g, "");
-      var coupon = modal.querySelector("#checkout-coupon").value.trim().toUpperCase();
+      var email =
+        prompt(
+          "अपना Email लिखें:"
+        );
+
+      if (email === null)
+        return;
+
+      var phone =
+        prompt(
+          "अपना 10-digit Mobile Number लिखें:"
+        );
+
+      if (phone === null)
+        return;
+
+      // Coupon code (खाली छोड़ सकते हैं) — असली छूट server जाँचकर लगाता है
+      var coupon = prompt(
+        "Coupon code (अगर है तो लिखें, नहीं तो खाली छोड़ें):"
+      );
+
+      if (coupon === null)
+        return;
+
+      coupon = coupon.trim().toUpperCase();
+
+      name = name.trim();
+      email = email.trim();
+      phone =
+        phone.replace(
+          /\D/g,
+          ""
+        );
 
       if (!name) {
-        alert("कृपया अपना नाम डालें।");
+        alert(
+          "कृपया अपना नाम डालें।"
+        );
         return;
       }
 
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        alert("कृपया सही Email डालें।");
+      if (
+        !email ||
+        !email.includes("@")
+      ) {
+        alert(
+          "कृपया सही Email डालें।"
+        );
         return;
       }
 
-      if (!/^[6-9]\d{9}$/.test(phone)) {
-        alert("कृपया सही 10-digit Indian Mobile Number डालें।");
+      if (
+        !/^[6-9]\d{9}$/.test(
+          phone
+        )
+      ) {
+        alert(
+          "कृपया सही 10-digit Indian Mobile Number डालें।"
+        );
         return;
       }
 
-      pay.disabled = true;
-      pay.textContent = "Payment तैयार हो रहा है...";
+      btn.disabled = true;
+
+      btn.textContent =
+        "Opening Payment...";
 
       try {
-        var response = await fetch(WORKER_URL + "/api/create-order", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            product_id: backendProductId,
-            name: name,
-            email: email,
-            phone: phone,
-            coupon: coupon
-          })
-        });
 
-        var data = await response.json();
+        var response =
+          await fetch(
+            WORKER_URL +
+              "/api/create-order",
+            {
+              method: "POST",
 
-        if (!response.ok || !data.payment_session_id) {
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify({
+                  product_id:
+                    backendProductId,
+                  name: name,
+                  email: email,
+                  phone: phone,
+                  coupon: coupon
+                })
+            }
+          );
+
+        var data =
+          await response.json();
+
+        if (
+          !response.ok ||
+          !data.payment_session_id
+        ) {
+
           console.error(data);
+
+          // coupon गलत/ख़त्म हो तो वही कारण दिखाओ
           alert(
             data && data.coupon_error
               ? data.coupon_error
               : "Payment शुरू नहीं हो सका। कृपया फिर कोशिश करें।"
           );
-          pay.disabled = false;
-          pay.textContent = "Payment पर जाएँ — ₹" + now;
+
+          btn.disabled =
+            false;
+
+          btn.textContent =
+            "Buy Now";
+
           return;
         }
 
-        if (typeof Cashfree !== "function") {
-          alert("Payment system load नहीं हुआ। कृपया page refresh करें।");
-          pay.disabled = false;
-          pay.textContent = "Payment पर जाएँ — ₹" + now;
+        if (
+          typeof Cashfree !==
+          "function"
+        ) {
+
+          alert(
+            "Payment system load नहीं हुआ। कृपया page refresh करें।"
+          );
+
+          btn.disabled =
+            false;
+
+          btn.textContent =
+            "Buy Now";
+
           return;
         }
 
-        var cashfree = Cashfree({
-          mode: "sandbox"
-        });
+        var cashfree =
+          Cashfree({
+            mode: "sandbox"
+          });
 
         await cashfree.checkout({
-          paymentSessionId: data.payment_session_id,
-          redirectTarget: "_self"
+          paymentSessionId:
+            data.payment_session_id,
+
+          redirectTarget:
+            "_self"
         });
 
       } catch (err) {
+
         console.error(err);
-        alert("Payment system से connection नहीं हो पाया।");
-        pay.disabled = false;
-        pay.textContent = "Payment पर जाएँ — ₹" + now;
+
+        alert(
+          "Payment system से connection नहीं हो पाया।"
+        );
+
+        btn.disabled =
+          false;
+
+        btn.textContent =
+          "Buy Now";
       }
-    });
-  }
-
-  document.addEventListener("click", function (e) {
-    var btn = e.target.closest(".buy-btn");
-    if (!btn) return;
-
-    var productId = btn.getAttribute("data-product-id");
-    var backendProductId = PRODUCT_IDS[productId];
-
-    if (!backendProductId) {
-      alert("Book not found.");
-      return;
     }
-
-    var b = BOOKS.filter(function (x) {
-      return x.id === productId;
-    })[0];
-
-    if (!b) {
-      alert("Book not found.");
-      return;
-    }
-
-    btn.disabled = true;
-    checkoutModal(b, btn, backendProductId);
-  });
+  );
 
   /* =========================
      PAYMENT RETURN
@@ -924,8 +962,9 @@
     box.style.cssText =
       "position:fixed;inset:0;background:#101a26;color:white;" +
       "display:flex;align-items:center;justify-content:center;" +
-      "z
-          box.innerHTML =
+      "z-index:99999;padding:24px;text-align:center;font-family:Arial,sans-serif;";
+
+    box.innerHTML =
       "<div>" +
 
       "<h2>Payment verify हो रहा है...</h2>" +
