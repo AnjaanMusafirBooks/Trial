@@ -273,6 +273,7 @@
         "</div>" +
 
         "</div>";
+
     } else if (fs) {
       fs.hidden = true;
     }
@@ -761,19 +762,15 @@
       if (email === null)
         return;
 
-      /*
-        Mobile Optional:
-        खाली छोड़ने पर भी आगे बढ़ेगा।
-      */
       var phone =
         prompt(
-          "Mobile Number (Optional) — चाहें तो खाली छोड़ें:"
+          "अपना 10-digit Mobile Number लिखें (वैकल्पिक — खाली छोड़ सकते हैं):"
         );
 
-      if (phone === null)
+      if (phone === null) {
         phone = "";
+      }
 
-      // Coupon code optional
       var coupon = prompt(
         "Coupon code (अगर है तो लिखें, नहीं तो खाली छोड़ें):"
       );
@@ -785,7 +782,6 @@
 
       name = name.trim();
       email = email.trim();
-
       phone =
         phone.replace(
           /\D/g,
@@ -809,10 +805,6 @@
         return;
       }
 
-      /*
-        Mobile दिया गया है तो valid होना चाहिए।
-        खाली है तो कोई error नहीं।
-      */
       if (
         phone &&
         !/^[6-9]\d{9}$/.test(
@@ -820,7 +812,7 @@
         )
       ) {
         alert(
-          "अगर Mobile Number देना है तो सही 10-digit Indian Mobile Number डालें।"
+          "कृपया सही 10-digit Indian Mobile Number डालें।"
         );
         return;
       }
@@ -1069,16 +1061,38 @@
 
     chrome();
 
-    /*
-      पहले website render होगी।
-      उसके बाद D1 से latest price/offer आएगा।
-      इससे D1/API slow होने पर books गायब नहीं होंगी।
-    */
-
     var pg =
       document.body.dataset.page;
+
+    /*
+      BOOKS पहले render होंगे।
+      D1 केवल latest price/offer के लिए है।
+      इसलिए D1 slow या unavailable होने पर
+      books गायब नहीं होंगी।
+    */
 
     if (pg === "home") {
       home();
 
-  
+    } else if (pg === "book") {
+      book();
+    }
+
+    /*
+      D1 data आने के बाद latest
+      price/MRP/offer के लिए refresh।
+    */
+
+    await loadD1Products();
+
+    if (pg === "home") {
+  } else if (pg === "book") {
+      book();
+    }
+
+    checkPaymentReturn();
+  }
+
+  start();
+
+})();
