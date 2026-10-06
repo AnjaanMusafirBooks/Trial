@@ -746,76 +746,162 @@
         return;
       }
 
-      var name =
-        prompt(
-          "अपना नाम लिखें:"
-        );
+      function openCheckoutForm(book) {
+        return new Promise(function (resolve) {
+          var old = document.querySelector(".checkout-modal");
+          if (old) old.remove();
 
-      if (name === null)
-        return;
+          var modal = document.createElement("div");
+          modal.className = "checkout-modal";
+          modal.innerHTML =
+            '<div class="checkout-backdrop" data-checkout-close></div>' +
+            '<div class="checkout-dialog" role="dialog" aria-modal="true" aria-labelledby="checkout-title">' +
+              '<div class="checkout-head">' +
+                '<div>' +
+                  '<p class="checkout-kicker">ANJAAN MUSAFIR BOOKS</p>' +
+                  '<h2 id="checkout-title">Complete Your Order</h2>' +
+                '</div>' +
+                '<button type="button" class="checkout-close" aria-label="Close" data-checkout-close>&times;</button>' +
+              '</div>' +
+              '<div class="checkout-book">' +
+                '<img class="checkout-cover" src="' + esc(book.cover) + '" alt="' + esc(book.title) + ' — eBook cover">' +
+                '<div class="checkout-book-info">' +
+                  '<h3 class="checkout-title">' + esc(book.title) + '</h3>' +
+                  '<div class="checkout-price">' + price(book) + '</div>' +
+                  '<p class="checkout-secure">Secure checkout · Digital PDF</p>' +
+                '</div>' +
+              '</div>' +
+              '<div class="checkout-divider"></div>' +
+              '<form class="checkout-form" novalidate>' +
+                '<label class="checkout-field">' +
+                  '<span>Name <b>*</b></span>' +
+                  '<input name="name" type="text" autocomplete="name" placeholder="अपना नाम लिखें" required>' +
+                '</label>' +
+                '<label class="checkout-field">' +
+                  '<span>Email <b>*</b></span>' +
+                  '<input name="email" type="email" autocomplete="email" placeholder="अपना Email लिखें" required>' +
+                '</label>' +
+                '<label class="checkout-field">' +
+                  '<span>Mobile <em>(Optional)</em></span>' +
+                  '<input name="phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="10" placeholder="10-digit mobile number">' +
+                '</label>' +
+                '<label class="checkout-field">' +
+                  '<span>Coupon Code <em>(Optional)</em></span>' +
+                  '<input name="coupon" type="text" autocomplete="off" placeholder="Coupon code, अगर है">' +
+                '</label>' +
+                '<div class="checkout-error" hidden></div>' +
+                '<div class="checkout-safe"><span class="checkout-safe-icon">✓</span><span>Your details are used only to create your order and payment session.</span></div>' +
+                '<div class="checkout-actions">' +
+                  '<button type="submit" class="btn primary checkout-pay">Continue to Payment</button>' +
+                  '<button type="button" class="btn checkout-cancel" data-checkout-close>Cancel</button>' +
+                '</div>' +
+              '</form>' +
+            '</div>';
 
-      var email =
-        prompt(
-          "अपना Email लिखें:"
-        );
+          document.body.appendChild(modal);
+          document.body.classList.add("checkout-open");
 
-      if (email === null)
-        return;
+          var form = modal.querySelector(".checkout-form");
+          var error = modal.querySelector(".checkout-error");
+          var nameInput = form.elements.name;
 
-      var phone =
-        prompt(
-          "अपना 10-digit Mobile Number लिखें (वैकल्पिक — खाली छोड़ सकते हैं):"
-        );
+          function close(value) {
+            document.body.classList.remove("checkout-open");
+            modal.classList.remove("open");
+            setTimeout(function () {
+              if (modal.parentNode) modal.remove();
+            }, 230);
+            resolve(value);
+          }
 
-      if (phone === null) {
-        phone = "";
+          modal.querySelectorAll("[data-checkout-close]").forEach(function (el) {
+            el.addEventListener("click", function () {
+              close(null);
+            });
+          });
+
+          document.addEventListener("keydown", function escClose(e) {
+            if (!modal.parentNode) {
+              document.removeEventListener("keydown", escClose);
+              return;
+            }
+
+            if (e.key === "Escape") {
+              document.removeEventListener("keydown", escClose);
+              close(null);
+            }
+          });
+
+          form.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            var name = form.elements.name.value.trim();
+            var email = form.elements.email.value.trim();
+            var phone = form.elements.phone.value.replace(/\D/g, "");
+            var coupon = form.elements.coupon.value.trim().toUpperCase();
+
+            error.hidden = true;
+            error.textContent = "";
+
+            if (!name) {
+              error.textContent = "कृपया अपना नाम डालें।";
+              error.hidden = false;
+              nameInput.focus();
+              return;
+            }
+
+            if (!email || !email.includes("@")) {
+              error.textContent = "कृपया सही Email डालें।";
+              error.hidden = false;
+              form.elements.email.focus();
+              return;
+            }
+
+            if (phone && !/^[6-9]\d{9}$/.test(phone)) {
+              error.textContent = "कृपया सही 10-digit Indian Mobile Number डालें।";
+              error.hidden = false;
+              form.elements.phone.focus();
+              return;
+            }
+
+            var pay = form.querySelector(".checkout-pay");
+
+            pay.disabled = true;
+            pay.textContent = "Preparing Payment...";
+
+            close({
+              name: name,
+              email: email,
+              phone: phone,
+              coupon: coupon
+            });
+          });
+
+          requestAnimationFrame(function () {
+            modal.classList.add("open");
+            nameInput.focus();
+          });
+        });
       }
 
-      var coupon = prompt(
-        "Coupon code (अगर है तो लिखें, नहीं तो खाली छोड़ें):"
-      );
+      var checkoutBook =
+        BOOKS.filter(function (b) {
+          return b.id === productId;
+        })[0];
 
-      if (coupon === null)
-        return;
-
-      coupon = coupon.trim().toUpperCase();
-
-      name = name.trim();
-      email = email.trim();
-      phone =
-        phone.replace(
-          /\D/g,
-          ""
-        );
-
-      if (!name) {
-        alert(
-          "कृपया अपना नाम डालें।"
-        );
+      if (!checkoutBook) {
+        alert("Book not found.");
         return;
       }
 
-      if (
-        !email ||
-        !email.includes("@")
-      ) {
-        alert(
-          "कृपया सही Email डालें।"
-        );
-        return;
-      }
+      var customer = await openCheckoutForm(checkoutBook);
 
-      if (
-        phone &&
-        !/^[6-9]\d{9}$/.test(
-          phone
-        )
-      ) {
-        alert(
-          "कृपया सही 10-digit Indian Mobile Number डालें।"
-        );
-        return;
-      }
+      if (!customer) return;
+
+      var name = customer.name;
+      var email = customer.email;
+      var phone = customer.phone;
+      var coupon = customer.coupon;
 
       btn.disabled = true;
 
@@ -1086,7 +1172,7 @@
     await loadD1Products();
 
     if (pg === "home") {
-  } else if (pg === "book") {
+    } else if (pg === "book") {
       book();
     }
 
