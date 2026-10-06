@@ -979,7 +979,7 @@
 
         var cashfree =
           Cashfree({
-            mode: "sandbox"
+            mode: "production"
           });
 
         await cashfree.checkout({
