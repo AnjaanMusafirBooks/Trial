@@ -917,17 +917,24 @@
         try {
           var data = await validateCoupon(book.id, coupon);
           verified = data;
-          priceBox.innerHTML =
-            '<div class="coupon-price-preview">' +
-              '<span class="now">' + money(data.final_price) + '</span>' +
-              '<s>' + money(data.current_price) + '</s>' +
-              '<b>Save ' + money(data.discount_price) + '</b>' +
-            '</div>';
-          couponStatus.className = "coupon-status ok";
-          couponStatus.hidden = false;
-          couponStatus.innerHTML = data.free
-            ? "✓ Coupon verified · 100% OFF · Pay ₹0"
-            : "✓ Coupon verified · Pay " + money(data.final_price);
+
+var payableAmount =
+  data.final_price > 0 && data.final_price < 1
+    ? 1
+    : data.final_price;
+
+priceBox.innerHTML =
+  '<div class="coupon-price-preview">' +
+    '<span class="now">' + money(payableAmount) + '</span>' +
+    '<s>' + money(data.current_price) + '</s>' +
+    '<b>Save ' + money(data.discount_price) + '</b>' +
+  '</div>';
+
+couponStatus.className = "coupon-status ok";
+couponStatus.hidden = false;
+couponStatus.innerHTML = data.free
+  ? "✓ Coupon verified · 100% OFF · Pay ₹0"
+  : "✓ Coupon verified · Pay " + money(payableAmount);
         } catch (err) {
           clearVerified();
           couponStatus.className = "coupon-status bad";
