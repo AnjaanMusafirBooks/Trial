@@ -99,10 +99,7 @@
   }
 
   function currentMrp(b) {
-    if (D1_PRODUCTS[b.id] && D1_PRODUCTS[b.id].mrp != null) {
-      return Number(D1_PRODUCTS[b.id].mrp);
-    }
-    return Number(b.mrp || 0);
+  return Number(b.mrp || 0);
   }
 
   /* =========================
