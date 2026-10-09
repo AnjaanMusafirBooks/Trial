@@ -1429,3 +1429,10 @@ body.result-open{overflow:hidden}
     #f6f1e6 25%
   );
 }
+
+
+/* Dynamic content manager additions — intentionally small and non-disruptive */
+.dynamic-announcement{position:relative;z-index:20;text-align:center;padding:9px 14px;background:#101a26;color:#fff;font-size:.92rem;border-bottom:1px solid #c9a45c}
+.presented-by{display:flex;align-items:center;gap:8px;font-size:.78rem;opacity:.86;margin-top:10px}
+.presented-by img{width:58px;height:auto;max-height:22px;object-fit:contain;border-radius:2px}
+.dynamic-list-item{padding-left:.4rem;margin:.35rem 0}

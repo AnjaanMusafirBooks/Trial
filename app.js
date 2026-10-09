@@ -597,6 +597,133 @@
   }
 
   /* =========================
+     DYNAMIC SITE CONTENT
+     Public content is fetched from Worker/D1; existing HTML remains the fallback.
+     Bodies are plain text with optional ## headings and - bullet lines (never raw HTML).
+  ========================= */
+  var SITE_CONTENT = {};
+  function renderPlainContent(target, body, activeEmail) {
+    if (!target || typeof body !== "string") return;
+    var frag = document.createDocumentFragment();
+    body.split(/\r?\n/).forEach(function (raw) {
+      var line = raw.trim();
+      if (!line) return;
+      var node;
+      if (line.indexOf("## ") === 0) {
+        node = document.createElement("h2"); node.textContent = line.slice(3);
+      } else if (line.indexOf("- ") === 0) {
+        node = document.createElement("p"); node.className = "dynamic-list-item"; node.textContent = "• " + line.slice(2);
+      } else {
+        node = document.createElement("p");
+        // Keep policy content as text, but make email addresses clickable without interpreting HTML.
+        var emailPattern = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/ig;
+        var last = 0, match;
+        while ((match = emailPattern.exec(line)) !== null) {
+          node.appendChild(document.createTextNode(line.slice(last, match.index)));
+          var address = match[0];
+          if (activeEmail && address.toLowerCase() === String(SITE.email || "").toLowerCase()) address = activeEmail;
+          var link = document.createElement("a");
+          link.href = "mailto:" + address;
+          link.textContent = address;
+          node.appendChild(link);
+          last = match.index + match[0].length;
+        }
+        if (last) node.appendChild(document.createTextNode(line.slice(last)));
+        else node.textContent = line;
+      }
+      frag.appendChild(node);
+    });
+    target.replaceChildren(frag);
+  }
+  async function loadSiteContent() {
+    try {
+      var response = await fetch(WORKER_URL + "/api/site-content", { cache: "no-store" });
+      if (!response.ok) return;
+      var payload = await response.json();
+      SITE_CONTENT = payload && payload.content || {};
+      var contentApiAvailable = !!(payload && payload.ok);
+      var configuredEmail = SITE_CONTENT.contact_email && SITE_CONTENT.contact_email.enabled && SITE_CONTENT.contact_email.body;
+      var activeEmail = configuredEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(configuredEmail.trim()) ? configuredEmail.trim() : SITE.email;
+      document.querySelectorAll("[data-dynamic-title]").forEach(function (node) {
+        var key = node.getAttribute("data-dynamic-title");
+        var item = SITE_CONTENT[key];
+        if (item && item.enabled && item.title) node.textContent = item.title;
+      });
+      document.querySelectorAll("[data-dynamic-content]").forEach(function (node) {
+        var key = node.getAttribute("data-dynamic-content");
+        var item = SITE_CONTENT[key];
+        if (!item || !item.enabled) {
+          // Only hide optional sections when the API successfully confirms that
+          // their content is disabled/missing. If the API is unavailable, keep
+          // the original static HTML as a safe fallback.
+          if (contentApiAvailable && ["about", "vision", "contact"].indexOf(key) !== -1) {
+            if (key === "contact") {
+              // Contact content appears on both the dedicated Contact page and the home-page contact block.
+              document.querySelectorAll('[data-dynamic-content="contact"], [data-dynamic-title="contact"]').forEach(function (contactNode) {
+                var contactSection = contactNode.closest("section");
+                if (contactSection) contactSection.hidden = true;
+              });
+              var homeContact = document.getElementById("contact");
+              if (homeContact) homeContact.hidden = true;
+            } else {
+              var section = node.closest("section");
+              if (section) section.hidden = true;
+            }
+          }
+          return;
+        }
+        if (item.enabled && ["about", "vision", "contact"].indexOf(key) !== -1) {
+          var visibleSection = node.closest("section");
+          if (visibleSection) visibleSection.hidden = false;
+          if (key === "contact") {
+            var homeContactVisible = document.getElementById("contact");
+            if (homeContactVisible) homeContactVisible.hidden = false;
+          }
+        }
+        if (node.id === "dynamic-policy-content") {
+          renderPlainContent(node, item.body, activeEmail);
+          var policyMain = node.closest("main");
+          var heading = policyMain && policyMain.querySelector(".phead h1");
+          if (heading && item.title) heading.textContent = item.title;
+          var updatedLabel = policyMain && policyMain.querySelector(".phead .upd");
+          if (updatedLabel && item.published_at) {
+            var publishedDate = new Date(String(item.published_at).replace(" ", "T") + "Z");
+            if (!Number.isNaN(publishedDate.getTime())) {
+              updatedLabel.textContent = "अंतिम अपडेट: " + new Intl.DateTimeFormat("hi-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" }).format(publishedDate);
+            }
+          }
+          if (item.title) document.title = item.title + " — Anjaan Musafir Books";
+        } else if (item.body != null) {
+          node.textContent = item.body;
+        }
+      });
+      var announcement = SITE_CONTENT.announcement;
+      if (announcement && announcement.enabled && announcement.body.trim()) {
+        var bar = document.createElement("div"); bar.className = "dynamic-announcement"; bar.textContent = announcement.body;
+        bar.setAttribute("role", "status");
+        document.body.insertBefore(bar, document.body.firstChild);
+      }
+      var email = configuredEmail;
+      if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+        email = email.trim();
+        document.querySelectorAll('a[href^="mailto:"]').forEach(function (link) {
+          // Set attributes/text through DOM APIs; never concatenate editable content into HTML.
+          link.href = "mailto:" + email;
+          link.textContent = email;
+        });
+      }
+      var tagline = SITE_CONTENT.footer_tagline;
+      var taglineNode = document.querySelector("[data-footer-tagline]");
+      if (tagline && tagline.enabled && taglineNode) taglineNode.textContent = tagline.body;
+      else if (contentApiAvailable && taglineNode) taglineNode.closest("p") && (taglineNode.closest("p").hidden = true);
+      var footerNote = SITE_CONTENT.footer_note;
+      var footerNoteNode = document.querySelector("[data-footer-note]");
+      if (footerNote && footerNote.enabled && footerNoteNode) footerNoteNode.textContent = footerNote.body;
+      else if (contentApiAvailable && footerNoteNode) footerNoteNode.closest("p") && (footerNoteNode.closest("p").hidden = true);
+    } catch (err) { console.warn("Dynamic site content unavailable; static content retained.", err); }
+  }
+
+  /* =========================
      HEADER / FOOTER
   ========================= */
 
@@ -613,7 +740,8 @@
 
         '<p class="brand">ANJAAN MUSAFIR BOOKS</p>' +
 
-        "<p>हर सफ़र बाहर जाने का नहीं होता।</p>" +
+        '<p data-footer-tagline>हर सफ़र बाहर जाने का नहीं होता।</p>' +
+        '<p class="presented-by"><img src="assets/digitech-move-logo.jpg" alt="DigiTech Move" loading="lazy"> <span data-footer-note>Presented by DigiTech Move</span></p>' +
 
         "</div>" +
 
@@ -630,11 +758,7 @@
 
         "<div>" +
 
-        '<a href="mailto:' +
-        SITE.email +
-        '">' +
-        SITE.email +
-        "</a>" +
+        '<a href="mailto:' + SITE.email + '">' + SITE.email + "</a>" +
 
         '<a href="' +
         SITE.instagram +
@@ -704,11 +828,7 @@
 
     if (c) {
       c.innerHTML =
-        '<a href="mailto:' +
-        SITE.email +
-        '">' +
-        SITE.email +
-        "</a>" +
+        '<a href="mailto:' + SITE.email + '">' + SITE.email + "</a>" +
 
         '<a href="' +
         SITE.instagram +
@@ -1156,6 +1276,7 @@ couponStatus.innerHTML = data.free
 
   async function start() {
     chrome();
+    await loadSiteContent();
 
     var pg = document.body.dataset.page;
 
