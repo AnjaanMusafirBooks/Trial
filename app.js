@@ -1012,6 +1012,11 @@
             '<label class="checkout-field"><span>Mobile <b>*</b></span><input name="phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="10" placeholder="10-digit mobile number" required></label>' +
             '<div class="checkout-field coupon-field"><span>Coupon Code <em>(Optional)</em></span><div class="coupon-row"><input name="coupon" type="text" autocomplete="off" placeholder="Coupon code, अगर है"><button type="button" class="btn coupon-verify">Verify</button></div><div class="coupon-status" hidden></div></div>' +
             '<div class="checkout-error" hidden></div>' +
+            '<div class="checkout-loading" role="status" aria-live="polite" hidden>' +
+              '<div class="pay-spinner" aria-hidden="true"></div>' +
+              '<div><p class="checkout-loading-title">Preparing your secure payment…</p>' +
+              '<p class="checkout-loading-sub">Please wait a few seconds. The payment options will open automatically. Do not refresh or press back.</p></div>' +
+            '</div>' +
             '<div class="checkout-safe"><span class="checkout-safe-icon">✓</span><span>Your details are used only to create your order and payment session.</span></div>' +
             '<div class="checkout-actions"><button type="submit" class="btn primary checkout-pay">Continue</button><button type="button" class="btn checkout-cancel" data-checkout-close>Cancel</button></div>' +
           '</form>' +
@@ -1028,6 +1033,7 @@
       var priceBox = modal.querySelector("[data-live-price]");
       var nameInput = form.elements.name;
       var verified = null;
+      var loading = false;
 
       function close(value) {
         document.body.classList.remove("checkout-open");
@@ -1094,7 +1100,7 @@ couponStatus.innerHTML = data.free
       });
 
       modal.querySelectorAll("[data-checkout-close]").forEach(function (el) {
-        el.addEventListener("click", function () { close(null); });
+        el.addEventListener("click", function () { if (loading) return; close(null); });
       });
 
       function escClose(e) {
@@ -1103,6 +1109,7 @@ couponStatus.innerHTML = data.free
           return;
         }
         if (e.key === "Escape") {
+          if (loading) return;
           document.removeEventListener("keydown", escClose);
           close(null);
         }
@@ -1141,8 +1148,25 @@ couponStatus.innerHTML = data.free
 
         var pay = form.querySelector(".checkout-pay");
         pay.disabled = true;
-        pay.textContent = "Preparing…";
-        close({ name: name, email: email, phone: phone, coupon: coupon });
+        pay.textContent = "Please wait…";
+        loading = true;
+        modal.classList.add("is-loading");
+        form.querySelectorAll("input,button").forEach(function (el) {
+          if (el !== pay) el.disabled = true;
+        });
+        var box = modal.querySelector(".checkout-loading");
+        box.hidden = false;
+        var slowTimer = setTimeout(function () {
+          var sub = box.querySelector(".checkout-loading-sub");
+          if (sub) sub.textContent = "Still connecting to the secure payment gateway. Thank you for your patience…";
+        }, 8000);
+
+        // Modal tab tak khula rahega jab tak payment page na khul jaye.
+        // Error aaye to finish() se band karo.
+        resolve({
+          name: name, email: email, phone: phone, coupon: coupon,
+          finish: function () { clearTimeout(slowTimer); loading = false; close(null); }
+        });
       });
 
       requestAnimationFrame(function () {
@@ -1151,6 +1175,33 @@ couponStatus.innerHTML = data.free
       });
     });
   }
+
+  /* =========================
+     WARM-UP (Worker + Cashfree SDK pehle se taiyaar)
+  ========================= */
+
+  // Page खुलते ही Worker को जगा दें (cold start हटता है) और Cashfree SDK तैयार रखें।
+  var cashfreeInstance = null;
+  function getCashfree() {
+    if (!cashfreeInstance && typeof Cashfree === "function") {
+      cashfreeInstance = Cashfree({ mode: "production" });
+    }
+    return cashfreeInstance;
+  }
+  function warmUpCheckout() {
+    try { getCashfree(); } catch (e) {}
+    try { fetch(WORKER_URL + "/api/catalog", { cache: "no-store" }).catch(function () {}); } catch (e) {}
+  }
+  warmUpCheckout();
+
+  // Payment page se back dabane par purana loading modal na dikhe
+  window.addEventListener("pageshow", function (ev) {
+    if (!ev.persisted) return;
+    var m = document.querySelector(".checkout-modal");
+    if (m) m.remove();
+    document.body.classList.remove("checkout-open");
+    document.querySelectorAll(".buy-btn").forEach(function (b) { b.disabled = false; b.textContent = "Buy Now"; });
+  });
 
   document.addEventListener("click", async function (e) {
     var btn = e.target.closest(".buy-btn");
@@ -1164,6 +1215,9 @@ couponStatus.innerHTML = data.free
       showResultModal(null, { success: false, title: "Book not found", message: "यह किताब अभी उपलब्ध नहीं है।" });
       return;
     }
+
+    // Form khulte waqt hi Worker ko dobara jaga do (user form bharte-bharte warm ho jaye)
+    warmUpCheckout();
 
     var customer = await openCheckoutForm(checkoutBook);
     if (!customer) return;
@@ -1188,6 +1242,7 @@ couponStatus.innerHTML = data.free
       try { data = await response.json(); } catch (err) {}
 
       if (!response.ok) {
+        customer.finish();
         showResultModal(null, {
           success: false,
           title: "Order शुरू नहीं हो सका",
@@ -1197,6 +1252,7 @@ couponStatus.innerHTML = data.free
       }
 
       if (data.free && data.download_url) {
+        customer.finish();
         showResultModal(data, {
           success: true,
           title: "Congratulations! 🎉",
@@ -1206,6 +1262,7 @@ couponStatus.innerHTML = data.free
       }
 
       if (!data.payment_session_id) {
+        customer.finish();
         showResultModal(null, {
           success: false,
           title: "Payment शुरू नहीं हो सका",
@@ -1215,6 +1272,7 @@ couponStatus.innerHTML = data.free
       }
 
       if (typeof Cashfree !== "function") {
+        customer.finish();
         showResultModal(null, {
           success: false,
           title: "Payment system load नहीं हुआ",
@@ -1223,13 +1281,14 @@ couponStatus.innerHTML = data.free
         return;
       }
 
-      var cashfree = Cashfree({ mode: "production" });
+      var cashfree = getCashfree() || Cashfree({ mode: "production" });
       await cashfree.checkout({
         paymentSessionId: data.payment_session_id,
         redirectTarget: "_self"
       });
     } catch (err) {
       console.error(err);
+      customer.finish();
       showResultModal(null, {
         success: false,
         title: "Payment connection में समस्या",

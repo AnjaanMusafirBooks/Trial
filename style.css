@@ -1460,12 +1460,24 @@ body.result-open{overflow:hidden}
 .sec.narrow>h2::after,.sec.center>h2::after{margin-inline:0}
 
 /* Trust strip */
-.trust{background:#fffdf8;border-bottom:1px solid var(--line)}
-.trustgrid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem 1rem;padding:1.1rem 0}
+.trust{position:relative;background:linear-gradient(180deg,var(--navy2),var(--navy));border-top:1px solid #c9a45c33;border-bottom:1px solid #c9a45c33}
+.trust::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.55}
+.trustgrid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;padding:1.3rem 0}
 @media(min-width:760px){.trustgrid{grid-template-columns:repeat(4,1fr)}}
-.trustgrid div{display:flex;flex-direction:column;padding-left:.8rem;border-left:2px solid var(--gold);line-height:1.35}
-.trustgrid b{color:var(--navy);font-size:.95rem}
-.trustgrid span{color:var(--mute);font-size:.8rem}
+.trustgrid div{display:flex;flex-direction:column;padding:.8rem .9rem;border:1px solid #c9a45c40;border-left:3px solid var(--gold);border-radius:12px;background:#ffffff0a;line-height:1.35;box-shadow:0 6px 18px #04091433}
+.trustgrid b{color:#e8c987;font-family:var(--serif);font-size:1rem;font-weight:400;letter-spacing:.2px}
+.trustgrid span{color:#c9c6bb;font-size:.82rem;margin-top:.15rem}
+
+/* Checkout modal: loading state (site theme) */
+.pay-spinner{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:3px solid #c9a45c33;border-top-color:var(--gold);animation:paySpin .9s linear infinite}
+.checkout-loading{display:flex;align-items:center;gap:.9rem;margin:.9rem 0;padding:.9rem 1rem;border-radius:14px;border:1px solid #c9a45c59;background:linear-gradient(180deg,var(--navy2),var(--navy));color:#e9e4d6}
+.checkout-loading[hidden]{display:none}
+.checkout-loading-title{margin:0 0 .15rem;color:#e8c987;font-family:var(--serif);font-size:1.02rem}
+.checkout-loading-sub{margin:0;color:#c9c6bb;font-size:.82rem;line-height:1.4}
+.checkout-modal.is-loading .checkout-form{pointer-events:none}
+.checkout-modal.is-loading .checkout-close,.checkout-modal.is-loading .checkout-cancel{opacity:.35}
+.checkout-modal.is-loading .checkout-field{opacity:.6}
+@keyframes paySpin{to{transform:rotate(360deg)}}
 
 /* Cards & price */
 .card .price .now{color:var(--navy)}
