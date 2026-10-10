@@ -1460,10 +1460,9 @@ body.result-open{overflow:hidden}
 .sec.narrow>h2::after,.sec.center>h2::after{margin-inline:0}
 
 /* Trust strip */
-.trust{position:relative;background:linear-gradient(180deg,var(--navy2),var(--navy));border-top:1px solid #c9a45c33;border-bottom:1px solid #c9a45c33}
-.trust::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.55}
+.trust{background:var(--navy);border:0}
 .trustgrid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;padding:1.3rem 0}
-@media(min-width:760px){.trustgrid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:760px){.trustgrid{max-width:640px;margin-left:auto;margin-right:auto}}
 .trustgrid div{display:flex;flex-direction:column;padding:.8rem .9rem;border:1px solid #c9a45c40;border-left:3px solid var(--gold);border-radius:12px;background:#ffffff0a;line-height:1.35;box-shadow:0 6px 18px #04091433}
 .trustgrid b{color:#e8c987;font-family:var(--serif);font-size:1rem;font-weight:400;letter-spacing:.2px}
 .trustgrid span{color:#c9c6bb;font-size:.82rem;margin-top:.15rem}
