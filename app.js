@@ -99,7 +99,12 @@
   }
 
   function currentMrp(b) {
-  return Number(b.mrp || 0);
+    // Offer ke saath D1 MRP aaye (aur price se bada ho) to wahi, warna books.js wala MRP.
+    var d = D1_PRODUCTS[b.id];
+    if (d && d.mrp != null && Number(d.mrp) > currentPrice(b)) {
+      return Number(d.mrp);
+    }
+    return Number(b.mrp || 0);
   }
 
   /* =========================
@@ -448,9 +453,10 @@
 
       price(b, true) +
 
-      '<div class="actions">' +
-      buy(b) +
-      "</div>" +
+      '<div class="actions">' + buy(b) +
+      '<button type="button" class="btn share-btn" id="shareBtn">शेयर करें</button></div>' +
+      '<div class="sharebox" id="shareBox" hidden><span>शेयर करें:</span><a id="shWa" target="_blank" rel="noopener">WhatsApp</a><a id="shTg" target="_blank" rel="noopener">Telegram</a><button type="button" id="shCp">लिंक कॉपी करें</button><span id="shMsg" role="status" aria-live="polite"></span></div>' +
+      '<ul class="trustrow"><li>Instant PDF download</li><li>Secure payment · Cashfree</li><li>UPI · Card · Net Banking</li></ul>' +
 
       "</div>" +
 
@@ -594,6 +600,30 @@
       buy(b) +
 
       "</div>";
+    bindShare(b);
+  }
+
+
+  /* =========================
+     SHARE (native share, warna WhatsApp / Telegram / copy link)
+  ========================= */
+  function bindShare(b) {
+    var btn = $("#shareBtn"), box = $("#shareBox");
+    if (!btn || !box) return;
+    var url = location.origin + location.pathname + "?book=" + encodeURIComponent(b.id);
+    var text = b.title + " — " + b.subtitle + " (Hindi eBook, Anjaan Musafir Books)";
+    $("#shWa").href = "https://wa.me/?text=" + encodeURIComponent(text + "\n" + url);
+    $("#shTg").href = "https://t.me/share/url?url=" + encodeURIComponent(url) + "&text=" + encodeURIComponent(text);
+    var msg = $("#shMsg");
+    $("#shCp").addEventListener("click", function () {
+      function ok() { msg.textContent = "लिंक कॉपी हो गया"; }
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(ok, function () { window.prompt("लिंक कॉपी करें:", url); });
+      else window.prompt("लिंक कॉपी करें:", url);
+    });
+    btn.addEventListener("click", function () {
+      if (navigator.share) { navigator.share({ title: b.title, text: text, url: url }).catch(function () {}); }
+      else { box.hidden = !box.hidden; }
+    });
   }
 
   /* =========================
@@ -1228,15 +1258,32 @@ couponStatus.innerHTML = data.free
       message: "कृपया कुछ सेकंड इंतज़ार करें।"
     });
 
-    try {
-      var response = await fetch(
-        WORKER_URL + "/api/payment-status?order_id=" + encodeURIComponent(orderId)
-      );
-      var data = await response.json();
-
+    function closeResult() {
       var old = document.querySelector(".result-modal");
       if (old) old.remove();
       document.body.classList.remove("result-open");
+    }
+
+    async function fetchStatus() {
+      var response = await fetch(
+        WORKER_URL + "/api/payment-status?order_id=" + encodeURIComponent(orderId)
+      );
+      return response.json();
+    }
+
+    try {
+      var data = null;
+
+      // UPI/bank kabhi kabhi kuch second late confirm karta hai: 5 baar tak, 3-3 second ke gap se dekhte hain.
+      for (var attempt = 0; attempt < 5; attempt++) {
+        data = await fetchStatus();
+        if (data && (data.status === "PAID" || data.error)) break;
+        if (attempt < 4) {
+          await new Promise(function (resolve) { setTimeout(resolve, 3000); });
+        }
+      }
+
+      closeResult();
 
       if (data.status === "PAID" && data.download_url) {
         showResultModal(data, {
@@ -1259,9 +1306,7 @@ couponStatus.innerHTML = data.free
       }
     } catch (err) {
       console.error(err);
-      var old2 = document.querySelector(".result-modal");
-      if (old2) old2.remove();
-      document.body.classList.remove("result-open");
+      closeResult();
       showResultModal(null, {
         success: false,
         title: "Verification में समस्या",
@@ -1274,24 +1319,35 @@ couponStatus.innerHTML = data.free
      START WEBSITE
   ========================= */
 
-  async function start() {
-    chrome();
-    await loadSiteContent();
-
-    var pg = document.body.dataset.page;
-
+  function renderPage(pg) {
     if (pg === "home") {
       home();
     } else if (pg === "book") {
       book();
     }
+  }
 
-    await loadD1Products();
+  async function start() {
+    chrome();
+    loadSiteContent(); // parallel: page ko rokta nahi
 
-    if (pg === "home") {
-      home();
-    } else if (pg === "book") {
-      book();
+    var pg = document.body.dataset.page;
+
+    // Price D1 se aate hi ek hi baar draw karte hain (price "flicker" nahi hota).
+    // Agar Worker 1.2 second se dheere ho to pehle backup price dikhate hain, phir update.
+    var d1done = false;
+    var d1 = loadD1Products().then(function () { d1done = true; });
+
+    await Promise.race([
+      d1,
+      new Promise(function (resolve) { setTimeout(resolve, 1200); })
+    ]);
+
+    renderPage(pg);
+
+    if (!d1done) {
+      await d1;
+      renderPage(pg);
     }
 
     checkPaymentReturn();

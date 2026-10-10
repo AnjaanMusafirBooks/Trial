@@ -1436,3 +1436,75 @@ body.result-open{overflow:hidden}
 .presented-by{display:flex;align-items:center;gap:8px;font-size:.78rem;opacity:.86;margin-top:10px}
 .presented-by img{width:58px;height:auto;max-height:22px;object-fit:contain;border-radius:2px}
 .dynamic-list-item{padding-left:.4rem;margin:.35rem 0}
+
+/* =========================================================
+   18) PREMIUM POLISH (visual refinements — layout/logic unchanged)
+========================================================= */
+::selection{background:#c9a45c55;color:var(--navy)}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* Hero */
+.hero{position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(520px 260px at 12% 105%,#c9a45c26,transparent 70%),radial-gradient(420px 220px at 92% 0%,#c9a45c18,transparent 70%)}
+.hero .wrap{position:relative}
+.hero h1{text-wrap:balance;animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.hero .lead{animation:rise .7s .12s cubic-bezier(.2,.7,.2,1) both}
+.hero .actions{animation:rise .7s .24s cubic-bezier(.2,.7,.2,1) both}
+.eyebrow::before,.eyebrow::after{content:"";display:inline-block;width:26px;height:1px;background:var(--gold);vertical-align:middle;margin:0 .7rem;opacity:.7}
+.kicker::before{content:"";display:inline-block;width:22px;height:1px;background:var(--gold);vertical-align:middle;margin-right:.6rem}
+#herocovers img:hover{transform:translateY(-6px) rotate(0);box-shadow:0 26px 40px #000a}
+
+/* Section headings: thin gold rule */
+.sec>h2::after{content:"";display:block;width:46px;height:2px;margin-top:.55rem;background:linear-gradient(90deg,var(--gold),transparent)}
+.sec.narrow>h2::after,.sec.center>h2::after{margin-inline:0}
+
+/* Trust strip */
+.trust{background:#fffdf8;border-bottom:1px solid var(--line)}
+.trustgrid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem 1rem;padding:1.1rem 0}
+@media(min-width:760px){.trustgrid{grid-template-columns:repeat(4,1fr)}}
+.trustgrid div{display:flex;flex-direction:column;padding-left:.8rem;border-left:2px solid var(--gold);line-height:1.35}
+.trustgrid b{color:var(--navy);font-size:.95rem}
+.trustgrid span{color:var(--mute);font-size:.8rem}
+
+/* Cards & price */
+.card .price .now{color:var(--navy)}
+.card .badge,.bhero .badge,#featured .badge{box-shadow:0 4px 12px #0b142640;border:1px solid #c9a45c66}
+.bhero .badge,#featured .badge{position:static;display:inline-block;margin-bottom:.7rem}
+.price .off{background:#e9f6ee;color:#176b3b;border-radius:999px;padding:.05rem .6rem}
+#featured .price .off,.bhero .price .off,.final .price .off{background:#c9a45c26;color:#e8c987}
+
+/* Buttons */
+.btn.primary{background-size:200% 100%;transition:transform .2s ease,box-shadow .2s ease,background-position .4s ease}
+.btn.primary:hover{background-position:100% 0}
+.btn:focus-visible{outline-offset:3px}
+
+/* Book page: trust row + share */
+.trustrow{list-style:none;padding:0;margin:1.1rem 0 0;display:flex;flex-wrap:wrap;gap:.45rem .5rem}
+.trustrow li{padding:.2rem .75rem;border:1px solid #c9a45c55;border-radius:999px;font-size:.78rem;color:#e9e4d6;background:#ffffff0d}
+.bhero .share-btn{color:var(--ivory)}
+.sharebox{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin-top:.9rem;padding:.7rem 1rem;background:#ffffff12;border-left:3px solid var(--gold);border-radius:0 10px 10px 0;font-size:.92rem;color:#e9e4d6}
+.sharebox[hidden]{display:none}
+.sharebox a,.sharebox button{background:none;border:0;padding:0;font:inherit;font-weight:600;color:var(--gold);text-decoration:underline;cursor:pointer}
+
+/* Sticky buy bar: glass */
+.sticky{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 -10px 28px #0b142616}
+
+/* Footer gold line */
+footer{position:relative}
+footer::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.7}
+
+/* Mera Order result */
+.order-result{background:#fff;border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:12px;padding:1rem 1.2rem;box-shadow:0 8px 22px #0b142612}
+
+@media(prefers-reduced-motion:reduce){
+  .hero h1,.hero .lead,.hero .actions{animation:none!important}
+}
+
+/* Dark-section readability fixes */
+.hero .sub,.bhero .sub,#featured .sub,.final .sub{color:#c9c6bb}
+.bhero .meta,#featured .meta{color:#aeb4bd}
+.bhero .plabel,#featured .plabel{color:#b9b8b3}
+.sticky .btn{white-space:nowrap}
+.sticky .price{flex-wrap:nowrap;gap:.45rem}
+.sticky .price .now{font-size:1.45rem}
