@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#0b1426">
+  <title>Team Login — Anjaan Musafir Books</title>
+  <link rel="stylesheet" href="team-login.css">
+</head>
+<body>
+  <a class="skip-link" href="#login-form">मुख्य सामग्री पर जाएँ</a>
+  <main class="auth-shell">
+    <a class="brand" href="index.html" aria-label="Anjaan Musafir Books homepage">ANJAAN MUSAFIR <span>BOOKS</span></a>
+    <section class="auth-card" aria-labelledby="page-title">
+      <p class="eyebrow">SECURE TEAM ACCESS</p>
+      <h1 id="page-title">Team Login</h1>
+      <p class="intro">अपने अधिकृत role के साथ sign in करें। Access का फैसला server आपके account की वास्तविक permissions के आधार पर करेगा।</p>
+      <div id="config-notice" class="notice notice-warn" role="status">Candidate API अभी configure नहीं है। Staging Worker URL सेट होने तक login उपलब्ध नहीं होगा।</div>
+      <form id="login-form" novalidate>
+        <label for="role">अपना role चुनें</label>
+        <select id="role" name="role" required>
+          <option value="FOUNDER">Founder / Owner</option>
+          <option value="ADMINISTRATOR">Administrator</option>
+          <option value="OPERATIONS_MANAGER">Operations Manager</option>
+          <option value="PRODUCT_MANAGER">Product Manager</option>
+          <option value="MARKETING_MANAGER">Marketing Manager</option>
+          <option value="CUSTOMER_SUPPORT">Customer Support</option>
+          <option value="CONTENT_EDITOR">Content Editor</option>
+          <option value="ANALYST">Analyst</option>
+          <option value="TECHNICAL_SUPPORT">Technical Support</option>
+        </select>
+        <label for="email">Login Email</label>
+        <input id="email" name="email" type="email" autocomplete="username" maxlength="254" required>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" required>
+        <button id="login-button" type="submit" disabled>Secure Login</button>
+        <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
+      </form>
+      <p class="security-note">अपना password किसी के साथ साझा न करें। यह page password या session token को URL में नहीं रखता।</p>
+    </section>
+    <a class="back-link" href="index.html">← Public website पर वापस जाएँ</a>
+  </main>
+  <script src="new-version-config.js"></script>
+  <script src="team-login.js" defer></script>
+</body>
+</html>

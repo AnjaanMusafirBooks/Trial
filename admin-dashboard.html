@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#0b1426">
+  <title>Founder Dashboard — Anjaan Musafir Books</title>
+  <link rel="stylesheet" href="admin-dashboard.css">
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="index.html">ANJAAN MUSAFIR <span>BOOKS</span></a><div class="top-actions"><span id="user-badge" class="user-badge">Checking session…</span><button id="logout-button" type="button">Logout</button></div></header>
+  <div class="layout">
+    <aside class="sidebar" aria-label="Admin navigation"><p class="nav-title">WORKSPACE</p><a class="active" href="admin-dashboard.html">Dashboard</a><span>Legacy Admin disabled in candidate</span><a href="team-login.html">Team Login</a><p class="nav-title">PLANNED MODULES</p><span>Products & Books</span><span>Offers & Coupons</span><span>Orders & Customers</span><span>Reports & CSV</span><span>Email Activity</span><span>System Health</span><span>Backup & Maintenance</span><p class="sidebar-note">ये modules अलग batches में जोड़े जाएँगे। अभी unavailable हैं।</p></aside>
+    <main class="main-content">
+      <div class="page-heading"><div><p class="eyebrow">SECURE WORKSPACE</p><h1>Dashboard</h1><p class="subheading">नमस्ते, <strong id="display-name">…</strong></p></div><span id="session-state" class="state-pill">Session verify हो रहा है</span></div>
+      <section id="global-status" class="status-box" role="status" aria-live="polite">Candidate API से session verify किया जा रहा है…</section>
+      <section class="metrics" aria-label="Dashboard metrics">
+        <article class="metric-card"><span>Total orders</span><strong>Unavailable</strong><small>Orders API अभी implement नहीं हुई</small></article>
+        <article class="metric-card"><span>Paid orders</span><strong>Unavailable</strong><small>Verified reporting data उपलब्ध नहीं</small></article>
+        <article class="metric-card"><span>Pending orders</span><strong>Unavailable</strong><small>Orders API अभी implement नहीं हुई</small></article>
+        <article class="metric-card"><span>Gross sales</span><strong>Unavailable</strong><small>Reports API अभी implement नहीं हुई</small></article>
+      </section>
+      <section class="panel"><h2>Account & access</h2><dl class="profile-grid"><div><dt>Name</dt><dd id="profile-name">—</dd></div><div><dt>Email</dt><dd id="profile-email">—</dd></div><div><dt>Role</dt><dd id="profile-role">—</dd></div><div><dt>Session expiry</dt><dd id="profile-expiry">—</dd></div></dl><p class="panel-note">Role और session server से verify किए जाते हैं। Dashboard के cards में कोई demo या अनुमानित business data नहीं दिखाया जाता।</p></section>
+      <section class="panel"><h2>Implementation status</h2><p>इस candidate build में authentication UI जोड़ी गई है। Product, order, report, email, backup और health modules अभी पूर्ण नहीं हैं। जब तक उनके वास्तविक APIs implement और test नहीं होते, इन्हें active feature नहीं माना जाएगा।</p></section>
+    </main>
+  </div>
+  <script src="new-version-config.js"></script>
+  <script src="admin-dashboard.js" defer></script>
+</body>
+</html>
